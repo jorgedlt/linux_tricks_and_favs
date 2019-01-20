@@ -1,0 +1,282 @@
+BASH howto
+echo "${BASH_VERSION}"
+
+https://github.com/dylanaraps/pure-bash-bible
+
+Great BASH Talk and REF
+https://www.dropbox.com/s/dj1vjx32qo7hyrv/bash_concise_2017.pdf?dl=0
+
+https://www.dropbox.com/s/42bumfixbm09rpw/bash_linuxcon-eu.pdf?dl=0
+
+More from James here: http://www.jpnc.info/
+
+
+Conditional Test
+Parameter Expansion: Conditionals
+Parameter Expansion: Substrings right, left
+
+
+PROMPT PS1 with Exit Error Status
+PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w[$?] \$ '
+
+GREAT WAY TO SHOW $PATH
+echo -e "${PATH//:/\\n}"
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# BASH File Date 
+echo foo > foofoo-xfer.$(date +"%Y%m%d%H%M")
+
+read -p "Press enter to continue"
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# For LOOP
+for ((i = 0 ; i < 5 ; i++)); do
+  echo "Welcome $i times."
+done
+
+# IF/THEN 1
+  if [ condition ]
+  then
+      statements for when the condition is true
+  fi
+
+# IF/THEN 2
+[[ list ]] && if-true || if-false
+
+true || { echo aaa && echo bbb; }
+
+true && { echo aaa && echo bbb; }
+
+# ELIF
+  OS=`uname -s`
+  if [ "$OS" = "FreeBSD" ]; then
+      echo "This Is FreeBSD"
+  elif [ "$OS" = "CYGWIN_NT-5.1" ]; then
+      echo "This is Cygwin"
+  elif [ "$OS" = "SunOS" ]; then
+      echo "This is Solaris"
+  elif [ "$OS" = "Darwin" ]; then
+      echo "This is Mac OSX"
+  elif [ "$OS" = "Linux" ]; then
+      echo "This is Linux"
+  else
+      echo "Failed to identify this OS"
+  fi
+
+# CASE statement
+  case "$VAR" in
+      pattern_1)
+          # Some commands here.
+          ;; # Execution will stop when the double semicolon is reached
+      pattern_n)
+          # Some commands here.
+          ;;
+  esac
+
+# CASE statement 2
+  case $input in
+    *[[:digit:]]*) echo -en "numerical " ;;&
+    *[[:lower:]]*) echo -en "lowercase " ;;&
+    *[[:upper:]]*) echo -en "uppercase " ;;&
+    *) echo "input." ;;
+  esac
+
+# WHILE sample
+          #!/bin/bash
+         COUNTER=0
+         while [  $COUNTER -lt 10 ]; do
+             echo The counter is $COUNTER
+             let COUNTER=COUNTER+1
+         done
+
+# UNTIL sample
+          #!/bin/bash
+         COUNTER=20
+         until [  $COUNTER -lt 10 ]; do
+             echo COUNTER $COUNTER
+             let COUNTER-=1
+         done
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+# Common Conditional Expressions
+  See them all by executing 'help test'
+
+    [[ -e file ]]                 file exists
+    [[ -f file ]]                 file is a regular file
+    [[ -d file ]]                 file is a directory
+    [[ -t fd ]]                   fd is open and refers to a terminal
+    [[ file0 -nt file1 ]]         file0 is newer than file1
+    [[ file0 -ef file1 ]]         file0 is a hard link to file1
+    [[ -n string ]]               string is non-empty
+    [[ -z string ]]               string is empty
+    [[ string0 == "string1" ]]    string0 and string1 are the same
+    [[ string0 != "string1" ]]    string0 and string1 are not the same
+    [[ string == pattern ]]       string matches pattern
+    [[ string =~ regex ]]         string matches regular expression
+    
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+Parameter Expansion: Conditionals
+(check if variable is unset, empty, or non-empty)
+                         unset param     param=""       param="gnu"
+  ${param-default}       default         -              gnu
+  ${param=default}       name=default    -              gnu
+  ${param+alternate}     -               alternate      alternate
+  ${param?error}         error           -              gnu
+
+Treat empty as unset:
+  ${param:-default}      default         default        gnu
+  ${param:=default}      name=default    name=default   gnu
+  ${param:+alternate}    -               -              alternate
+  ${param:?error}        error           error          gnu
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+Parameter Expansion: Substrings
+                                       param="mandrake"
+Extraction:
+  ${param:offset}                         drake          # offset = 3
+  ${param:offset:length}                  dr             # length = 2
+
+Removal from left edge:                 pattern='*a'
+  ${param#pattern}                        ndrake
+  ${param##pattern}                       ke
+
+Removal from right edge:                pattern='*a'
+  ${param%pattern}                        mandr
+  ${param%%pattern}                       m
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# Remove the path from a path-string
+  export mypath='/foo/bar/bim/baz/myfile.gif'
+  myfile=${mypath##*/}  ; echo ${myfile}        #   alternatively  echo ${mypath##*/}
+
+    >>> myfile.gif
+
+# Remove the extension from a path-string
+  export mybase=${myfile%.*}
+  echo ${mybase}
+
+    >>> myfile
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+BASH Parameter Expansion: Substrings
+
+# Extraction
+  export mystring="mandrake"
+  echo ${mystring:3}                        #  ${mystring:offset}
+    >>> drake
+
+  echo ${mystring:3:2}                      #  ${mystring:offset:length}
+     >>> dr
+
+# Removal from left edge:
+       export pattern='*a'
+
+       echo ${mystring#pattern}             ndrake
+       echo ${mystring##pattern}            ke
+
+# Removal from right edge:
+       export pattern='*a'
+
+       echo ${mystring%pattern}                        mandr
+       echo ${mystring%%pattern}                       m
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+Parameter Expansion: Pattern Substitution
+                                          param="ubuntu"
+Substitution:                           pattern = 'u?', string = 'X'
+  ${param/pattern/string}                 Xuntu
+  ${param//pattern/string}                XXtu
+Substitute at left edge:                pattern = 'u', string = 'X'
+  ${param/#pattern/string}                 Xbuntu
+Substitute at right edge:
+  ${param/%pattern/string}                 ubuntX
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+Indexed Arrays
+
+Assign an array by elements:
+  array=( zeroonetwo "three and more")
+Add to an array or modify an element:
+  array+=( "four and beyond" [0]=ZERO )
+Recreate array with spaces in elements as underscores:
+  array=( "${array[@]// /_}")
+Recreate array only with elements from index 2 to 4:
+  array=( "${array[@]:2:3}")
+Print element at index 1 of array (second element):
+  echo"${array[1]}"
+Print array indexes:
+  echo${!array[@]}
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+A Few Good Links
+➢ http://www.gnu.org/software/bash/
+➢ http://tiswww.case.edu/php/chet/bash/NEWS
+➢ http://tldp.org/LDP/abs/html/index.html
+➢ http://wiki.bash-hackers.org/doku.php
+➢ http://git.jpnc.info/parssh/
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+BASH debuging
+
+set -x			# activate debugging from here
+set +x			# stop debugging from here
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+BASH exit status on prompt (PS1)
+  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w[$?] \$ '
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# TRAPs
+
+#!/bin/bash
+# traptest.sh
+# notice you cannot make Ctrl-C work in this shell, 
+# try with your local one, also remeber to chmod +x 
+# your local .sh file so you can execute it!
+
+trap "echo Booh!" SIGINT SIGTERM
+echo "it's going to run until you hit Ctrl+Z"
+echo "hit Ctrl+C to be blown away!"
+
+while true:         
+do
+    sleep 60       
+done
+
+SIGINT: user sends an interrupt signal (Ctrl + C)
+SIGQUIT: user sends a quit signal (Ctrl + C)
+SIGFPE: attempted an illegal mathematical operation
+
+    see `trap -l` and `help trap`
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+# List Operators
+
+  list0; list1      Execute list0, then execute list1.  Same as separation by newline.
+
+  list0 & list1     Execute list0 in a background subshell and simultaneously execute list1.
+
+  list0 && list1    Execute list0, then execute list1 only if list0 returns status 0.
+
+  list0 || list1    Execute list0, then execute list1 only if list0 returns a non-zero status.
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# testing-mongos-z1.mia.ulti.io
+export dbUid=$(safe get secret/jorgedlt/mongo:dbUid)
+export dbPid=$(safe get secret/jorgedlt/mongo:dbPid)
+
+keyhole mongodb://${dbUid}:${dbPid}@testing-z1.mia.ulti.io:27017 \
+--info --ssl | jq .
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+BASH Tricks
+https://github.com/nibalizer/bash-tricks/blob/master/bash_tricks.sh
